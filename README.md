@@ -227,49 +227,32 @@ kubectl get pods -l app=devops-copilot
 kubectl logs -f deployment/devops-copilot
 ```
 
-## 📈 Development Roadmap & Progress
+## 📈 Learning Progress
 
-**Current Status**: Day 1 Complete - Setup & Installation ✅  
-**Progress**: 1/21 days (5%)
+**Start Date**: October 7, 2025  
+**Current Status**: Day 1/21 Complete ✅  
+**Progress**: 5%
 
-### 📊 Detailed Progress Tracking
-For day-by-day learning progress, achievements, and challenges, see:
-- **[📅 Progress Overview](docs/progress/README.md)** - Week-by-week status and metrics
-- **[📝 Day 1: Setup & Installation](docs/progress/DAY01_SETUP.md)** - Complete setup documentation
-- **[📖 ML Learning Path](docs/ML_LEARNING_PATH.md)** - 3-week structured learning plan
+### Quick Links
+- [📅 Progress Tracker](docs/progress/README.md) - Daily logs and metrics
+- [📖 Learning Path](docs/ML_LEARNING_PATH.md) - 3-week structured plan
+- [📝 Day 1 Log](docs/progress/DAY01.md) - Setup & Installation
 
-### Week 1: ML Fundamentals (Days 1-7) 🔄
-**Status**: 1/7 days complete (14%)
+### 3-Week Plan
 
-- [x] **Day 1** - Setup & Installation ✅
-- [ ] **Day 2** - ML Fundamentals (Bias/Variance, Confusion Matrix)
-- [ ] **Day 3** - Simple Models (Linear/Logistic Regression)
-- [ ] **Day 4** - Decision Trees & Random Forests
-- [ ] **Day 5** - Model Evaluation (Precision, Recall, F1)
-- [ ] **Day 6** - Practice & Review
-- [ ] **Day 7** - Week 1 Assessment
+**Week 1: ML Fundamentals** (Days 1-7) - 1/7 complete
+- Learn core ML concepts for log classification
+- Understand model evaluation metrics
 
-### Week 2: Neural Networks & LLMs (Days 8-14) 📅
-**Status**: Not started
+**Week 2: Neural Networks & LLMs** (Days 8-14)
+- Understand LLMs and RAG systems
+- Learn LangChain and embeddings
 
-- [ ] **Day 8** - Neural Network Basics
-- [ ] **Day 9** - Understanding LLMs
-- [ ] **Day 10** - RAG Concepts
-- [ ] **Day 11** - LangChain Basics
-- [ ] **Day 12** - Embeddings & Vector Databases
-- [ ] **Day 13** - Practice & Review
-- [ ] **Day 14** - Week 2 Assessment
-
-### Week 3: Build the Project (Days 15-21) 📅
-**Status**: Not started
-
-- [ ] **Day 15** - K8s Log Collector
-- [ ] **Day 16** - Feature Engineering
-- [ ] **Day 17** - Train Log Classifier
-- [ ] **Day 18** - Build RAG Knowledge Base
-- [ ] **Day 19** - Integrate LLM & RAG
-- [ ] **Day 20** - API & UI Development
-- [ ] **Day 21** - Final Integration & Demo
+**Week 3: Build the Project** (Days 15-21)
+- Implement K8s log collector
+- Train ML classifier
+- Build RAG system with LLM
+- Create API and UI
 
 ## 🎓 Learning Resources
 
