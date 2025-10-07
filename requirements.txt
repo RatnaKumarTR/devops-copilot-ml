@@ -30,7 +30,8 @@ ollama==0.1.6
 # NLP & Transformers
 # ============================================================================
 transformers==4.36.2
-torch==2.1.2
+torch>=2.2.0
+torchvision>=0.17.0
 tokenizers==0.15.0
 huggingface-hub==0.20.2
 
@@ -72,7 +73,7 @@ tqdm==4.66.1
 click==8.1.7
 pyyaml==6.0.1
 requests==2.31.0
-httpx==0.26.0
+httpx>=0.25.2,<0.26.0
 
 # ============================================================================
 # Development & Testing
