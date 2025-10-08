@@ -142,6 +142,332 @@ DevOps Copilot:
 
 ---
 
+## 🧠 Intelligent Multi-Cause Analysis
+
+### Why Multi-Hypothesis Reasoning Matters
+
+**The Problem with Single-Cause Diagnosis**:
+- Real-world incidents rarely have one simple cause
+- Symptoms can be misleading (Orleans errors might be caused by cluster issues)
+- Tunnel vision leads to wasted time investigating wrong causes
+- Cascading failures create complex dependency chains
+
+**Our Approach**: Multi-hypothesis reasoning with probabilistic ranking
+
+### How It Works
+
+#### 1. **Evidence Correlation Engine**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│              Evidence Correlation Pipeline                  │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  Multiple Log Sources                                       │
+│  ├─ Application logs (primaryrecordservice, forms-be, etc) │
+│  ├─ Infrastructure logs (Kubernetes events, node status)   │
+│  ├─ Dependency logs (PostgreSQL, RabbitMQ, Orleans)        │
+│  └─ Network logs (Istio proxy, service mesh)               │
+│                    ↓                                        │
+│  Feature Extraction                                         │
+│  ├─ Error patterns (connection refused, timeout, etc)      │
+│  ├─ Temporal patterns (when did failures start?)           │
+│  ├─ Spatial patterns (which services affected?)            │
+│  └─ Resource patterns (CPU, memory, connections)           │
+│                    ↓                                        │
+│  Evidence Correlation                                       │
+│  ├─ Cross-service log correlation                          │
+│  ├─ Timeline analysis (what happened first?)               │
+│  ├─ Dependency graph analysis                              │
+│  └─ Historical pattern matching                            │
+│                    ↓                                        │
+│  Hypothesis Generation                                      │
+│  ├─ Generate multiple potential causes                     │
+│  ├─ Rank by probability (Bayesian reasoning)               │
+│  ├─ Assess confidence levels                               │
+│  └─ Identify cascading effects                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### 2. **Multi-Label ML Classification**
+
+**Not Binary Classification** (Orleans: Yes/No)  
+**But Multi-Label** (Orleans: 0.45, Cluster: 0.85, Database: 0.40, Network: 0.15)
+
+**Model Architecture**:
+```python
+# Conceptual model design
+class MultiCauseClassifier:
+    def __init__(self):
+        # Ensemble of specialized models
+        self.cluster_model = RandomForestClassifier()
+        self.orleans_model = GradientBoostingClassifier()
+        self.database_model = LogisticRegression()
+        self.network_model = SVC(probability=True)
+        
+    def predict_causes(self, features):
+        # Get probability from each model
+        probabilities = {
+            'cluster': self.cluster_model.predict_proba(features),
+            'orleans': self.orleans_model.predict_proba(features),
+            'database': self.database_model.predict_proba(features),
+            'network': self.network_model.predict_proba(features)
+        }
+        
+        # Calibrate probabilities (ensure they're well-calibrated)
+        calibrated = self.calibrate_probabilities(probabilities)
+        
+        # Rank by probability
+        ranked = self.rank_hypotheses(calibrated)
+        
+        return ranked
+```
+
+**Key Features**:
+- ✅ Multiple causes can be true simultaneously
+- ✅ Probability scores are calibrated (not just raw scores)
+- ✅ Confidence intervals provided
+- ✅ Learns from YOUR historical incidents
+
+#### 3. **Bayesian Reasoning for Probability Assessment**
+
+**How we calculate probabilities**:
+
+```
+P(Cause | Evidence) = P(Evidence | Cause) × P(Cause) / P(Evidence)
+
+Example for Cluster Issue:
+- P(Cluster Issue) = 0.15 (15% of incidents are cluster-related)
+- P(Multiple pods restarting | Cluster Issue) = 0.90 (strong indicator)
+- P(Node failures | Cluster Issue) = 0.95 (very strong indicator)
+- P(Simultaneous failures | Cluster Issue) = 0.85 (strong indicator)
+
+Combined: P(Cluster Issue | All Evidence) = 0.85 (85% confidence)
+```
+
+**Why this matters**:
+- Not just guessing - mathematically sound reasoning
+- Updates probabilities as more evidence arrives
+- Accounts for prior knowledge (historical incident rates)
+- Provides confidence levels, not just binary yes/no
+
+#### 4. **Investigation Workflow Generation**
+
+**Decision Tree Approach**:
+
+```
+Start
+  ↓
+Check Highest Probability Cause (85%: Cluster Issue)
+  ↓
+  ├─ If Confirmed → Fix & Monitor
+  │                 ↓
+  │                 Check Secondary Causes (cascading effects)
+  │
+  └─ If Not Confirmed → Check Next Cause (45%: Orleans)
+                        ↓
+                        ├─ If Confirmed → Fix & Monitor
+                        │
+                        └─ If Not Confirmed → Check Next Cause (40%: Database)
+                                              ↓
+                                              Continue until root cause found
+```
+
+**Adaptive Workflow**:
+- Prioritizes investigation based on probability
+- Provides specific commands/checks for each hypothesis
+- Explains WHY each check is important
+- Adapts based on findings (if cluster OK, focus on Orleans)
+
+#### 5. **Cascading Failure Detection**
+
+**Understanding Dependency Chains**:
+
+```
+Root Cause: Kubernetes Node Failure
+     ↓
+Network Partition
+     ↓
+Orleans Silos Can't Communicate
+     ↓
+Grain Activation Failures
+     ↓
+Database Connection Timeouts (waiting for Orleans)
+     ↓
+500 Errors Across All Services
+```
+
+**How We Detect This**:
+- ✅ Temporal analysis (what failed first?)
+- ✅ Dependency graph (what depends on what?)
+- ✅ Error propagation patterns
+- ✅ Historical cascading failure patterns
+
+**Value**: Identifies root cause, not just symptoms
+
+### Technical Implementation
+
+#### ML Model Training Strategy
+
+**Multi-Label Classification**:
+```python
+# Training data structure
+X = [
+    # Features: error patterns, resource metrics, temporal patterns
+    [connection_errors, cpu_usage, memory_usage, pod_restarts, ...],
+    ...
+]
+
+y = [
+    # Labels: multiple causes can be true
+    [cluster_issue=1, orleans_issue=1, db_issue=0, network_issue=0],
+    [cluster_issue=0, orleans_issue=1, db_issue=0, network_issue=1],
+    ...
+]
+
+# Train ensemble of models
+models = {
+    'cluster': train_model(X, y[:, 0]),
+    'orleans': train_model(X, y[:, 1]),
+    'database': train_model(X, y[:, 2]),
+    'network': train_model(X, y[:, 3])
+}
+```
+
+**Probability Calibration**:
+```python
+# Ensure probabilities are well-calibrated
+from sklearn.calibration import CalibratedClassifierCV
+
+calibrated_models = {
+    cause: CalibratedClassifierCV(model, method='isotonic')
+    for cause, model in models.items()
+}
+```
+
+**Confidence Estimation**:
+```python
+# Provide confidence intervals
+def get_confidence_interval(probabilities, n_bootstrap=1000):
+    # Bootstrap sampling to estimate uncertainty
+    bootstrap_probs = bootstrap_sample(probabilities, n_bootstrap)
+    lower = np.percentile(bootstrap_probs, 2.5)
+    upper = np.percentile(bootstrap_probs, 97.5)
+    return (lower, upper)
+```
+
+#### RAG System Enhancement
+
+**Multi-Document Retrieval**:
+```python
+# Retrieve relevant docs for ALL potential causes
+def retrieve_documentation(hypotheses):
+    docs = {}
+    for hypothesis in hypotheses:
+        # Retrieve docs relevant to this hypothesis
+        relevant_docs = vector_store.similarity_search(
+            query=hypothesis.description,
+            k=3  # Top 3 most relevant docs
+        )
+        docs[hypothesis.cause] = relevant_docs
+    return docs
+```
+
+**Context-Aware Prompting**:
+```python
+# LLM prompt includes multiple hypotheses
+prompt = f"""
+Analyze the following incident with multiple potential causes:
+
+Evidence:
+{evidence}
+
+Potential Causes (ranked by probability):
+1. {cause1} (85% confidence)
+   - Evidence: {evidence1}
+   - Documentation: {docs1}
+
+2. {cause2} (45% confidence)
+   - Evidence: {evidence2}
+   - Documentation: {docs2}
+
+3. {cause3} (40% confidence)
+   - Evidence: {evidence3}
+   - Documentation: {docs3}
+
+Provide:
+1. Most likely root cause and why
+2. Investigation workflow (check highest probability first)
+3. How to distinguish between causes
+4. Potential cascading effects
+"""
+```
+
+### Benefits of This Approach
+
+#### 1. **Prevents Tunnel Vision**
+- Engineers don't fixate on first hypothesis
+- Considers multiple possibilities systematically
+- Reduces wasted time on wrong causes
+
+#### 2. **Faster Root Cause Identification**
+- Probabilistic ranking guides investigation
+- Check most likely causes first
+- Clear decision tree prevents confusion
+
+#### 3. **Better Understanding of Complex Failures**
+- Identifies cascading effects
+- Shows dependency chains
+- Explains how failures propagate
+
+#### 4. **Continuous Learning**
+- Models improve with each incident
+- Learns YOUR specific failure patterns
+- Adapts to infrastructure changes
+
+#### 5. **Explainable AI**
+- Shows evidence for each hypothesis
+- Explains probability calculations
+- Provides confidence levels
+- Engineers understand the reasoning
+
+### Comparison: Single-Cause vs Multi-Cause
+
+| Aspect | Single-Cause Diagnosis | Multi-Cause Analysis |
+|--------|----------------------|---------------------|
+| **Approach** | "It's Orleans" | "85% cluster, 45% Orleans, 40% DB" |
+| **Risk** | High (might be wrong) | Low (considers alternatives) |
+| **Time** | Fast if correct, slow if wrong | Consistently fast |
+| **Accuracy** | 60-70% | 85-95% |
+| **Learning** | Limited | Continuous improvement |
+| **Explainability** | "Because I said so" | Evidence-based reasoning |
+
+### Real-World Example
+
+**Incident**: primaryrecordservice 500 errors
+
+**Single-Cause Approach**:
+```
+1. See "Connection reset by peer" in Orleans logs
+2. Assume: "It's an Orleans issue"
+3. Spend 30 minutes investigating Orleans
+4. Realize: Actually a cluster issue
+5. Total time: 40+ minutes
+```
+
+**Multi-Cause Approach**:
+```
+1. Analyze all evidence
+2. Rank: Cluster (85%), Orleans (45%), DB (40%)
+3. Check cluster first (2 minutes)
+4. Confirm: Node failures detected
+5. Total time: 3-4 minutes
+```
+
+**Time Saved**: 36 minutes (90% reduction)
+
+---
+
 ## 📊 Datadog vs DevOps Copilot - Feature Comparison
 
 ### What Datadog Provides (Keep Using)
@@ -206,53 +532,121 @@ Step 1: Check Datadog logs for primaryrecordservice     [5 min]
 Step 2: See "Connection refused" or similar error       [2 min]
 Step 3: Check if pods are running (kubectl)             [3 min]
 Step 4: Check Orleans cluster status                    [5 min]
-Step 5: Google "Orleans connection refused"             [10 min]
-Step 6: Remember to check .clinerules-nucleus-orl.md   [5 min]
-Step 7: Find Istio port exclusion issue                 [5 min]
-Step 8: Apply fix (add annotation)                      [5 min]
+Step 5: Check Kubernetes cluster health                 [5 min]
+Step 6: Check database connections                      [5 min]
+Step 7: Google various error messages                   [10 min]
+Step 8: Remember to check .clinerules documentation     [5 min]
+Step 9: Correlate findings across services              [10 min]
+Step 10: Identify actual root cause                     [5 min]
+Step 11: Apply fix                                      [5 min]
 
-Total Time: 40 minutes
+Total Time: 58 minutes
 Engineer Frustration: High
+Accuracy: Medium (easy to miss the real cause)
 ```
 
-#### With DevOps Copilot:
+#### With DevOps Copilot (Multi-Cause Analysis):
 
 ```
 Engineer: "Why is primaryrecordservice returning 500?"
 
-DevOps Copilot (2 minutes):
+DevOps Copilot (3-4 minutes):
 ┌─────────────────────────────────────────────────────────────┐
-│ Analysis Complete                                           │
+│ Multi-Hypothesis Analysis Complete                         │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│ 🔍 Root Cause:                                              │
-│ Orleans silo connection failed - Istio intercepting port   │
-│ 11111 (silo-to-silo communication)                         │
+│ 🔍 ROOT CAUSE ANALYSIS (Ranked by Probability):            │
 │                                                             │
-│ 📋 Evidence:                                                │
-│ - record-silo-be logs: "Connection reset by peer"          │
-│ - Istio proxy logs: Traffic on port 11111                  │
-│ - .clinerules-nucleus-orl.md: Known issue documented       │
+│ 1. ⚠️ HIGH (85%): Kubernetes Cluster Issue                 │
+│    Evidence:                                                │
+│    ✓ Multiple pods restarting across services (not just 1) │
+│    ✓ Cluster events: 2/5 nodes in NotReady state          │
+│    ✓ Network partition detected at 10:42 AM                │
+│    ✓ Affects primaryrecordservice, forms-be, record-silo   │
+│    ✓ Timeline: All services failed simultaneously          │
 │                                                             │
-│ ✅ Solution:                                                │
-│ Add Istio port exclusion annotation to record-silo-be:     │
+│    Impact: Cluster-wide outage, not service-specific       │
+│    → IMMEDIATE ACTION: Check cluster health first          │
+│      kubectl get nodes                                      │
+│      kubectl get events --sort-by='.lastTimestamp'         │
 │                                                             │
-│ ```yaml                                                     │
-│ metadata:                                                   │
-│   annotations:                                              │
-│     traffic.sidecar.istio.io/excludeOutboundPorts:         │
-│       "11111,30000"                                         │
-│ ```                                                         │
+│ 2. ⚠️ MEDIUM (45%): Orleans Cluster Coordination Failure   │
+│    Evidence:                                                │
+│    ✓ record-silo-be logs: "Connection reset by peer"       │
+│    ✓ Istio proxy logs: Traffic on port 11111               │
+│    ✓ Orleans membership table: Silos in "Joining" state    │
+│    ✗ BUT: Other non-Orleans services also affected         │
 │                                                             │
-│ 📖 Reference: .clinerules-nucleus-orl.md (lines 45-67)     │
+│    Note: Could be secondary effect of cluster issue        │
+│    → IF cluster healthy: Check Orleans configuration       │
+│      Reference: .clinerules-nucleus-orl.md                 │
+│                                                             │
+│ 3. ⚠️ MEDIUM (40%): Database Connection Pool Exhaustion    │
+│    Evidence:                                                │
+│    ✓ PostgreSQL logs: Connection timeouts                  │
+│    ✓ Connection pool: 97/100 connections in use           │
+│    ✓ Slow query detected (15s execution time)              │
+│    ✗ BUT: Started after cluster issues began               │
+│                                                             │
+│    Note: Likely cascading effect, not root cause           │
+│    → IF cluster & Orleans OK: Check database health        │
+│                                                             │
+│ 4. ⚠️ LOW (15%): Istio Service Mesh Routing Issue         │
+│    Evidence:                                                │
+│    ✓ Some Istio proxy errors in logs                       │
+│    ✗ No widespread Istio failures                          │
+│    ✗ Virtual Service configurations unchanged              │
+│                                                             │
+│    Note: Unlikely to be primary cause                      │
+│                                                             │
+│ 📊 RECOMMENDED INVESTIGATION WORKFLOW:                      │
+│                                                             │
+│ Step 1: Verify Kubernetes cluster health (2 min)           │
+│   → kubectl get nodes                                       │
+│   → kubectl describe node <failing-nodes>                   │
+│   → If nodes failing: Escalate to infrastructure team      │
+│                                                             │
+│ Step 2: If cluster healthy, check Orleans (3 min)          │
+│   → kubectl logs record-silo-be -n 207804-confirmation-qa  │
+│   → Check Orleans membership table in database             │
+│   → Apply Istio port exclusions if needed                  │
+│   → Reference: .clinerules-nucleus-orl.md                  │
+│                                                             │
+│ Step 3: If Orleans healthy, check database (2 min)         │
+│   → Check PostgreSQL connection pool status                │
+│   → Review slow query logs                                 │
+│   → Consider connection pool tuning                        │
+│                                                             │
+│ 🎯 MOST LIKELY SCENARIO (Based on Evidence):               │
+│ Kubernetes node failure → Network partition →              │
+│ Orleans silos can't communicate → Database connections     │
+│ timeout → Cascading 500 errors across all services         │
+│                                                             │
+│ 📖 REFERENCES:                                              │
+│ - Kubernetes cluster troubleshooting guide                 │
+│ - .clinerules-nucleus-orl.md (Orleans + Istio)            │
+│ - PostgreSQL monitoring docs (connection pooling)          │
+│                                                             │
+│ 💡 CONFIDENCE ASSESSMENT:                                   │
+│ High confidence in cluster issue (85%)                     │
+│ Recommend starting investigation there                     │
+│ Other causes may be secondary/cascading effects            │
 └─────────────────────────────────────────────────────────────┘
 
-Total Time: 2-3 minutes
+Total Time: 3-4 minutes
 Engineer Frustration: Low
+Accuracy: High (considers all possibilities)
 ```
 
-**Time Saved**: 37 minutes (92% reduction)  
-**Business Impact**: Faster recovery = Less revenue loss + Better customer experience
+**Time Saved**: 54 minutes (93% reduction)  
+**Business Impact**: 
+- Faster root cause identification (cluster issue, not just Orleans)
+- Prevents wasted time investigating secondary effects
+- Clear investigation workflow reduces confusion
+- Better understanding of cascading failures
+- Faster recovery = Less revenue loss + Better customer experience
+
+**Key Advantage**: Multi-hypothesis analysis prevents tunnel vision and identifies the ACTUAL root cause (cluster issue), not just symptoms (Orleans failures).
 
 ---
 
@@ -641,40 +1035,57 @@ Focus on **ONE high-impact use case**: Orleans/Istio troubleshooting
 
 ---
 
-#### Week 2: RAG System & Documentation
+#### Week 2: ML Models & RAG System
 
 **Goals**:
+- Build multi-label classification models
 - Index documentation
-- Implement RAG
-- Test retrieval accuracy
+- Implement RAG with multi-hypothesis support
+- Test retrieval and classification accuracy
 
 **Tasks**:
+- [ ] Build ML classification models
+  - Implement multi-label classifier (not binary)
+  - Train ensemble models (cluster, Orleans, database, network)
+  - Implement probability calibration
+  - Add confidence interval estimation
+  - Test on historical incidents
 - [ ] Prepare documentation
   - Index .clinerules-nucleus-orl.md
   - Index .clinerules-rabbitmq-tls-certs.md
   - Index .clinerules-record-silo.md
+  - Add Kubernetes troubleshooting guides
+  - Add database monitoring docs
 - [ ] Create vector embeddings
   - Use sentence-transformers
   - Store in ChromaDB
-  - Optimize chunk size
+  - Optimize chunk size for multi-doc retrieval
 - [ ] Implement RAG with LangChain
   - Connect to Llama 3.1 8B
-  - Configure retrieval parameters
-  - Fine-tune prompts
-- [ ] Test retrieval accuracy
-  - 10 test queries
-  - Measure relevance
-  - Iterate on prompts
+  - Configure multi-document retrieval
+  - Fine-tune prompts for multi-hypothesis analysis
+  - Add evidence correlation logic
+- [ ] Test system accuracy
+  - 10 test queries (single-cause)
+  - 5 test queries (multi-cause scenarios)
+  - Measure classification accuracy
+  - Measure retrieval relevance
+  - Iterate on models and prompts
 
 **Deliverables**:
-- RAG system with documentation
+- Multi-label ML classifier with calibrated probabilities
+- RAG system with multi-hypothesis support
+- Classification accuracy report
 - Retrieval accuracy report
-- Optimized prompts
+- Optimized prompts for complex scenarios
 
 **Success Criteria**:
+- ✅ Classification accuracy ≥ 80% for single-cause
+- ✅ Classification accuracy ≥ 70% for multi-cause
 - ✅ Retrieves relevant docs 80%+ of time
-- ✅ Response time < 2 seconds
-- ✅ Answers are accurate and actionable
+- ✅ Probability calibration error < 0.1
+- ✅ Response time < 3 seconds
+- ✅ Answers show multiple hypotheses when appropriate
 
 ---
 
@@ -718,57 +1129,138 @@ Focus on **ONE high-impact use case**: Orleans/Istio troubleshooting
 
 ### Test Cases for POC
 
-Use these real incidents to validate the POC:
+#### Single-Cause Test Cases (Simple Scenarios)
+
+Use these real incidents to validate basic functionality:
 
 1. **Orleans Silo Connection Failure**
    - Query: "Why can't Orleans silo join cluster?"
    - Expected: Identify Istio port exclusion issue
+   - Probability: Single cause (Orleans/Istio: 90%)
    - Source: .clinerules-nucleus-orl.md
 
 2. **RabbitMQ TLS Handshake Error**
    - Query: "Why is RabbitMQ TLS handshake failing?"
    - Expected: Identify certificate double-encoding
+   - Probability: Single cause (RabbitMQ config: 85%)
    - Source: .clinerules-rabbitmq-tls-certs.md
 
 3. **Record Silo Pod Crashing**
    - Query: "Why is record-silo-be pod crashing?"
    - Expected: Analyze logs and suggest fix
+   - Probability: Single cause (OOM or config: 80%)
    - Source: Logs + .clinerules-record-silo.md
 
 4. **Istio Routing to Orleans**
    - Query: "How do I fix Istio routing to Orleans?"
    - Expected: Provide port exclusion configuration
+   - Probability: Single cause (Istio config: 90%)
    - Source: .clinerules-nucleus-orl.md
 
 5. **Connection Reset by Peer**
    - Query: "What does 'Connection reset by peer' mean in Orleans?"
    - Expected: Explain Istio interference
+   - Probability: Single cause (Istio: 85%)
    - Source: .clinerules-nucleus-orl.md
 
-6. **Orleans Cluster Status**
-   - Query: "How do I check Orleans cluster health?"
-   - Expected: Provide kubectl commands and interpretation
-   - Source: .clinerules-nucleus-orl.md
+#### Multi-Cause Test Cases (Complex Scenarios)
 
-7. **RabbitMQ Certificate Configuration**
-   - Query: "How should I configure RabbitMQ TLS certificates?"
-   - Expected: Explain raw PEM vs base64 encoding
-   - Source: .clinerules-rabbitmq-tls-certs.md
+Use these to validate multi-hypothesis reasoning:
 
-8. **Istio Sidecar Configuration**
-   - Query: "What Istio annotations do I need for Orleans?"
-   - Expected: Provide exact YAML configuration
-   - Source: .clinerules-nucleus-orl.md
+6. **Cluster-Wide Service Failures**
+   - Query: "Why are multiple services returning 500 errors?"
+   - Expected: Multi-hypothesis analysis
+     - Cluster issue (85%): Node failures, network partition
+     - Orleans issue (45%): Silo coordination failure
+     - Database issue (40%): Connection pool exhaustion
+     - Network issue (20%): Istio routing problems
+   - Expected: Rank by probability, show investigation workflow
+   - Source: Multiple logs + documentation
 
-9. **Troubleshooting Workflow**
-   - Query: "Walk me through troubleshooting an Orleans issue"
-   - Expected: Provide step-by-step guide
-   - Source: .clinerules-nucleus-orl.md
+7. **Cascading Failure Scenario**
+   - Query: "primaryrecordservice is down, forms-be is slow, database connections timing out"
+   - Expected: Identify cascading failure chain
+     - Root cause: Database connection pool exhausted (80%)
+     - Secondary: Orleans grain activation delays (60%)
+     - Tertiary: Service timeouts propagating (50%)
+   - Expected: Show dependency chain and root cause
+   - Source: Cross-service log correlation
 
-10. **Best Practices**
+8. **Ambiguous Error Pattern**
+   - Query: "Seeing 'Connection refused' errors across services"
+   - Expected: Multiple potential causes
+     - Network partition (70%)
+     - Istio misconfiguration (50%)
+     - Service mesh issues (40%)
+     - Pod scheduling problems (30%)
+   - Expected: Provide investigation workflow to distinguish
+   - Source: Multiple services, infrastructure logs
+
+9. **Resource Exhaustion with Multiple Symptoms**
+   - Query: "Pods restarting, OOMKilled, slow responses"
+   - Expected: Correlate symptoms to root cause
+     - Memory leak (75%): OOMKilled + increasing memory
+     - CPU throttling (40%): Slow responses
+     - Disk pressure (30%): Pod evictions
+   - Expected: Identify primary cause and secondary effects
+   - Source: Resource metrics + logs
+
+10. **Orleans + Database + Network Issue**
+    - Query: "Orleans silos can't communicate, database timeouts, Istio errors"
+    - Expected: Complex multi-cause analysis
+      - Kubernetes cluster issue (85%): Affects all components
+      - Orleans configuration (50%): Port exclusions missing
+      - Database overload (45%): Connection pool issues
+      - Istio misconfiguration (30%): Service mesh problems
+    - Expected: Identify cluster issue as root cause
+    - Source: All documentation + logs
+
+#### Knowledge Retrieval Test Cases
+
+11. **Orleans Cluster Status**
+    - Query: "How do I check Orleans cluster health?"
+    - Expected: Provide kubectl commands and interpretation
+    - Source: .clinerules-nucleus-orl.md
+
+12. **RabbitMQ Certificate Configuration**
+    - Query: "How should I configure RabbitMQ TLS certificates?"
+    - Expected: Explain raw PEM vs base64 encoding
+    - Source: .clinerules-rabbitmq-tls-certs.md
+
+13. **Istio Sidecar Configuration**
+    - Query: "What Istio annotations do I need for Orleans?"
+    - Expected: Provide exact YAML configuration
+    - Source: .clinerules-nucleus-orl.md
+
+14. **Troubleshooting Workflow**
+    - Query: "Walk me through troubleshooting an Orleans issue"
+    - Expected: Provide step-by-step guide
+    - Source: .clinerules-nucleus-orl.md
+
+15. **Best Practices**
     - Query: "What are Orleans + Istio best practices?"
     - Expected: Summarize key recommendations
     - Source: .clinerules-nucleus-orl.md
+
+#### Success Criteria by Test Type
+
+**Single-Cause Tests (1-5)**:
+- ✅ Accuracy: 90%+ (must get 4-5 correct)
+- ✅ Response time: < 3 minutes
+- ✅ Provides actionable solution
+
+**Multi-Cause Tests (6-10)**:
+- ✅ Accuracy: 80%+ (must get 4-5 correct)
+- ✅ Identifies multiple potential causes
+- ✅ Ranks by probability correctly
+- ✅ Shows investigation workflow
+- ✅ Response time: < 5 minutes
+
+**Knowledge Retrieval Tests (11-15)**:
+- ✅ Accuracy: 95%+ (must get 5 correct)
+- ✅ Retrieves correct documentation
+- ✅ Provides complete answer
+- ✅ Response time: < 2 minutes
 
 ---
 
@@ -778,20 +1270,65 @@ Use these real incidents to validate the POC:
 
 | Metric | Target | Measurement Method |
 |--------|--------|-------------------|
-| **Accuracy** | 80%+ correct answers | Manual evaluation of 10 test cases |
-| **Response Time** | < 5 minutes | Time from query to actionable answer |
+| **Single-Cause Accuracy** | 90%+ correct answers | Manual evaluation of 5 single-cause test cases |
+| **Multi-Cause Accuracy** | 80%+ correct answers | Manual evaluation of 5 multi-cause test cases |
+| **Knowledge Retrieval Accuracy** | 95%+ correct answers | Manual evaluation of 5 knowledge test cases |
+| **Overall Accuracy** | 85%+ across all tests | Weighted average of all 15 test cases |
+| **Probability Calibration** | Error < 0.1 | Compare predicted vs actual probabilities |
+| **Multi-Hypothesis Detection** | 90%+ of complex cases | Correctly identifies when multiple causes exist |
+| **Root Cause Identification** | 85%+ correct | Identifies actual root cause in cascading failures |
+| **Response Time (Simple)** | < 3 minutes | Single-cause scenarios |
+| **Response Time (Complex)** | < 5 minutes | Multi-cause scenarios |
+| **Response Time (Knowledge)** | < 2 minutes | Documentation retrieval |
 | **Retrieval Relevance** | 80%+ relevant docs | Measure doc relevance scores |
 | **Query Performance** | < 2 seconds | Measure RAG system latency |
-| **MTTR Reduction** | 70%+ improvement | Compare with historical incidents |
+| **MTTR Reduction** | 85%+ improvement | Compare with historical incidents (40 min → 5 min) |
 
 #### Qualitative Metrics:
 
 | Metric | Target | Measurement Method |
 |--------|--------|-------------------|
-| **Answer Quality** | Actionable and accurate | Team feedback survey |
+| **Answer Quality** | Actionable and accurate | Team feedback survey (1-5 scale) |
+| **Multi-Cause Reasoning** | Clear and logical | Engineers understand probability rankings |
+| **Investigation Workflow** | Helpful and practical | Engineers follow suggested workflows |
+| **Evidence Presentation** | Clear and convincing | Engineers trust the analysis |
 | **Ease of Use** | Intuitive interface | User testing sessions |
 | **Team Satisfaction** | 4/5 stars or higher | Post-demo survey |
 | **Documentation Coverage** | Comprehensive | Review of indexed docs |
+| **Confidence in Results** | High trust | Engineers act on recommendations |
+
+#### Advanced ML Metrics:
+
+| Metric | Target | Measurement Method |
+|--------|--------|-------------------|
+| **Precision (per cause)** | 80%+ | True positives / (True positives + False positives) |
+| **Recall (per cause)** | 75%+ | True positives / (True positives + False negatives) |
+| **F1 Score (per cause)** | 77%+ | Harmonic mean of precision and recall |
+| **Calibration Error** | < 0.1 | Expected Calibration Error (ECE) |
+| **Brier Score** | < 0.2 | Measure of probability accuracy |
+| **AUC-ROC (per cause)** | 0.85+ | Area under ROC curve |
+
+#### Success Thresholds:
+
+**Minimum Viable (Go/No-Go for Production)**:
+- ✅ Overall accuracy ≥ 80%
+- ✅ Multi-cause detection ≥ 80%
+- ✅ Response time < 5 minutes (complex scenarios)
+- ✅ Team satisfaction ≥ 4/5 stars
+- ✅ MTTR reduction ≥ 70%
+
+**Target Performance (Ideal)**:
+- 🎯 Overall accuracy ≥ 90%
+- 🎯 Multi-cause detection ≥ 95%
+- 🎯 Response time < 3 minutes (complex scenarios)
+- 🎯 Team satisfaction ≥ 4.5/5 stars
+- 🎯 MTTR reduction ≥ 85%
+
+**Stretch Goals (Future Iterations)**:
+- 🚀 Overall accuracy ≥ 95%
+- 🚀 Predictive capabilities (prevent incidents)
+- 🚀 Automated remediation
+- 🚀 Response time < 1 minute
 
 ---
 
