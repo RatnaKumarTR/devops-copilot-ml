@@ -1267,31 +1267,11 @@ If POC demonstrates value, expand to:
 
 ---
 
-## ✅ Approval Signatures
-
-**Prepared by**:
-- Name: Ratna Kumar
-- Title: Senior DevOps Engineer
-- Date: October 8, 2025
-
-**Reviewed by**:
-- Name: ___________________
-- Title: ___________________
-- Date: ___________________
-
-**Approved by**:
-- Name: ___________________
-- Title: ___________________
-- Date: ___________________
-- Decision: ☐ Approved  ☐ Rejected  ☐ Needs Revision
-
 ---
 
 ## 📧 Contact Information
 
 **For Questions or Feedback**:
-- Email: ratna.kumar@company.com
-- Slack: @ratnakumar
 - GitHub: https://github.com/RatnaKumarTR/devops-copilot-ml
 
 **Project Repository**:
