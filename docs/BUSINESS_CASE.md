@@ -1,9 +1,5 @@
 # DevOps Copilot - Business Case & POC Proposal
 
-**Document Version**: 1.0  
-**Date**: October 8, 2025  
-**Author**: Ratna Kumar, Senior DevOps Engineer  
-**Status**: Proposal for Management Review
 
 ---
 
